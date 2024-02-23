@@ -6,7 +6,10 @@ let arrayPalabraActual;
 letrasIngresadas = [];
 let cantPartidasJugadas = -1;
 botonera.addEventListener("click", comienzo);
+
+
 function comienzo() {
+  let letraIngresada = document.getElementById("inputLetra").addEventListener("keypress");
   // Generar nuevos valores para continente y país
   const indiceContinente = Math.floor(Math.random() * ContinentesPaises.length);
   const continenteSeleccionado = ContinentesPaises[indiceContinente];
@@ -53,14 +56,14 @@ cantPartidasJugadas++;
 actualizarJugadas();
 
 function verificarLetra(event) {
-  let letraIngresada;
+  letraIngresada;
   
   // Verificar si se presionó una tecla
   if (isLetter(event.key)) {
     letraIngresada = event.key.toUpperCase();
   } else {
     // Si no se presionó una tecla, verificar el contenido del campo de entrada
-    letraIngresada = document.getElementById("inputLetra").value.trim().toUpperCase().focus();
+    letraIngresada.value.trim().toUpperCase().focus();
   }
 
   // Verificar si la letra ingresada no ha sido ingresada antes
