@@ -53,22 +53,32 @@ cantPartidasJugadas++;
 actualizarJugadas();
 
 function verificarLetra(event) {
+  let letraIngresada;
+  
+  // Verificar si se presionó una tecla
   if (isLetter(event.key)) {
-    if (letrasIngresadas.lastIndexOf(event.key.toUpperCase()) === -1) {
-      let acerto = false;
+    letraIngresada = event.key.toUpperCase();
+  } else {
+    // Si no se presionó una tecla, verificar el contenido del campo de entrada
+    letraIngresada = document.getElementById("inputLetra").value.trim().toUpperCase().focus();
+  }
 
-      acerto = verificarAcierto(event.key.toUpperCase());
+  // Verificar si la letra ingresada no ha sido ingresada antes
+  if (letraIngresada.lastIndexOf(letraIngresada) === -1) {
+    let acierto = verificarAcierto(letraIngresada);
 
-      if (!acerto) {
-        manejarError(event.key.toUpperCase());
-      }
-
-      actualizarLetrasIngresadas(event.key.toUpperCase(), acerto);
-
-      if (verificarVictoria()) {
-        manejarVictoria();
-      }
+    if (!acierto) {
+      manejarError(letraIngresada);
     }
+
+    actualizarLetrasIngresadas(letraIngresada, acierto);
+
+    if (verificarVictoria()) {
+      manejarVictoria();
+    }
+
+    // Limpiar el campo de entrada después de verificar la letra
+    document.getElementById("inputLetra").value = "";
   }
 }
 
