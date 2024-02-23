@@ -74,8 +74,10 @@ h3 {
   text-align: center;
   height: 25px;
 }
-h3 span {
+h3 span, h2 span {
   font-style: italic;
+  margin-left: 10px;
+  font-weight: 500;
 }
 button {
   display: block;
