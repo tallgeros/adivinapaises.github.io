@@ -1,25 +1,23 @@
 const botonera = document.getElementById("boton");
 let cantPalabrasJugadas = 0;
-let intentosRestantes = 3;
 let posActual;
 let arrayPalabraActual;
 letrasIngresadas = [];
 let cantPartidasJugadas = -1;
 botonera.addEventListener("click", comienzo);
-
-
 function comienzo() {
-  
   // Generar nuevos valores para continente y país
   const indiceContinente = Math.floor(Math.random() * ContinentesPaises.length);
   const continenteSeleccionado = ContinentesPaises[indiceContinente];
   const indicePais = Math.floor(Math.random() * continenteSeleccionado.paises.length);
   const paisSeleccionado = continenteSeleccionado.paises[indicePais];
+  this.textContent = "Nueva Palabra"
   if (cantPartidasJugadas >= 5) {
     alert("¡Has alcanzado el límite de 5 partidas!");
     return;
-  }
 
+  }
+  let intentosRestantes = 3;
   cantPartidasJugadas++;
   actualizarJugadas();
   // Reiniciar otros elementos y variables
@@ -27,19 +25,34 @@ function comienzo() {
   letrasIngresadas = [];
   document.getElementById("letrasIngresadas").textContent = "";
   document.getElementById("intentos").textContent = intentosRestantes;
+  document.getElementById("inputLetra").textContent = ""
   cantPalabrasJugadas++;
 
   // Cargar nueva palabra
   cargarNuevaPalabra(paisSeleccionado, continenteSeleccionado.continente);
-  
-  // Agregar event listener para verificar letra
-  document.addEventListener("keydown", verificarLetra);
 }
+// Agregar event listener para verificar letra ingresada por teclado
+document.addEventListener("keydown", function (event) {
+  const letraIngresada = event.key.toUpperCase();
+  if (isLetter(letraIngresada)) {
+    verificarLetra(letraIngresada);
+  }
+});
+
+// Agregar event listener para verificar letra ingresada en dispositivo móvil
+document.getElementById("inputLetra").addEventListener("input", function (event) {
+  const letraIngresada = event.target.value.toUpperCase();
+  if (isLetter(letraIngresada)) {
+    verificarLetra(letraIngresada);
+    // Limpiar el campo de entrada después de cada intento
+    this.value = "";
+  }
+});
 
 function cargarNuevaPalabra(pais, continente) {
   posActual = pais.toUpperCase();
   arrayPalabraActual = posActual.split('');
-  document.getElementById("ayuda").textContent =" "+" " + continente;
+  document.getElementById("ayuda").textContent = " " + " " + continente;
   document.getElementById("palabra").innerHTML = "";
   for (let i = 0; i < arrayPalabraActual.length; i++) {
     const divLetra = document.createElement("div");
@@ -49,42 +62,33 @@ function cargarNuevaPalabra(pais, continente) {
 }
 function actualizarJugadas() {
   const jugadasElement = document.getElementById("jugadas");
-  jugadasElement.textContent =" " + `Partida  ${cantPartidasJugadas}/5`;
+  jugadasElement.textContent = " " + `Partida  ${cantPartidasJugadas}/5`;
 }
 
 cantPartidasJugadas++;
 actualizarJugadas();
 
-function verificarLetra(event) {
-   let letraIngresada;
-  
-  // Verificar si se presionó una tecla
-  if (isLetter(event.key)) {
-    letraIngresada = event.key.toUpperCase();
-  } else {
-    // Si no se presionó una tecla, verificar el contenido del campo de entrada
-    letraIngresada = document.getElementById("inputLetra")
-    .addEventListener("keypress").value.trim().toUpperCase().focus();
-  }
+function verificarLetra(letra) {
+  if (isLetter(letra)) {
+    if (letrasIngresadas.lastIndexOf(letra.toUpperCase()) === -1) {
+      let acerto = false;
 
-  // Verificar si la letra ingresada no ha sido ingresada antes
-  if (letraIngresada.lastIndexOf(letraIngresada) === -1) {
-    let acierto = verificarAcierto(letraIngresada);
+      acerto = verificarAcierto(letra.toUpperCase());
 
-    if (!acierto) {
-      manejarError(letraIngresada);
+      if (!acerto) {
+        manejarError(letra.toUpperCase());
+      }
+
+      actualizarLetrasIngresadas(letra.toUpperCase(), acerto);
+
+      if (verificarVictoria()) {
+        manejarVictoria();
+      }
     }
-
-    actualizarLetrasIngresadas(letraIngresada, acierto);
-
-    if (verificarVictoria()) {
-      manejarVictoria();
-    }
-
-    // Limpiar el campo de entrada después de verificar la letra
-    document.getElementById("inputLetra").value = "";
   }
 }
+
+
 
 function verificarAcierto(letra) {
   let acerto = false;
@@ -99,17 +103,23 @@ function verificarAcierto(letra) {
 }
 
 function manejarError(letra) {
-  intentosRestantes--;
-  document.getElementById("intentos").textContent = intentosRestantes;
-
+  if (intentosRestantes > 0) { // Verificar si aún quedan intentos restantes
+    // Restar un intento
+    intentosRestantes--;
+    // Actualizar el contador de intentos en la interfaz
+    document.getElementById("intentos").textContent = intentosRestantes;
+  }
   if (intentosRestantes === 0) {
-    for (let i = 0; i < arrayPalabraActual.length; i++) {
-      document
-        .getElementsByClassName("letra")
-        [i].classList.add("pintarError");
+    const modal = document.getElementById("modal");
+    const modalMessage = document.getElementById("modal-message");
+    modalMessage.textContent = "¡Perdiste! La palabra era: " + arrayPalabraActual.join("");
+    modal.style.display = "block";
+    intentosRestantes = 3;
+    // Cuando se haga clic en la X, ocultar el modal
+    const closeModal = document.getElementsByClassName("close")[0];
+    closeModal.onclick = function () {
+      modal.style.display = "none";
     }
-    document.removeEventListener("keydown", verificarLetra);
-    alert("¡Perdiste! La palabra era: " + arrayPalabraActual);
   }
 }
 
@@ -136,13 +146,19 @@ function verificarVictoria() {
 
 
 function manejarVictoria() {
-  for (let i = 0; i < arrayPalabraActual.length; i++) {
-    document.getElementsByClassName("letra")[i].classList.add("pintar");
+  const modal = document.getElementById("modal");
+  const modalMessage = document.getElementById("modal-message");
+  modalMessage.textContent = "¡Ganaste!" + "" + "Felicidades";
+  modal.style.display = "block";
+
+  // Cuando se haga clic en la X, ocultar el modal
+  const closeModal = document.getElementsByClassName("close")[0];
+  closeModal.onclick = function () {
+    modal.style.display = "none";
   }
-  document.removeEventListener("keydown", verificarLetra);
-  alert("¡Ganaste!");
+  intentosRestantes = "";
 }
 
 function isLetter(str) {
-  return str.length === 1 && str.match(/[a-z]/i);
+  return str && str.length === 1 && str.match(/[a-z]/i);
 }
