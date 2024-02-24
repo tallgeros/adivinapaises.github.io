@@ -104,12 +104,12 @@ function verificarAcierto(letra) {
 }
 
 function manejarError(letra) {
- 
+ if(intentosRestantes > 0){
     // Restar un intento
     intentosRestantes--;
     // Actualizar el contador de intentos en la interfaz
     document.getElementById("intentos").textContent = intentosRestantes;
-  
+ }
   if (intentosRestantes === 0) {
     const modal = document.getElementById("modal");
     const modalMessage = document.getElementById("modal-message");
