@@ -1,235 +1,467 @@
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap");
+
 * {
   font-family: "Open Sans";
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
 }
+
 body {
   background: linear-gradient(#12b9de, #43d6d4);
   height: 100vh;
+  overflow: hidden;
 }
+
 .juego {
   width: 100vw;
   height: 100vh;
   border: 10px solid #1d2837;
   display: flex;
 }
+
 .jogo {
   width: 600px;
+  max-width: 95%;
   height: 650px;
   background-color: #1d2837;
   border: 3px solid #fff;
   color: #fff;
-  padding: 5px;
+  padding: 20px;
   margin: 50px auto;
   display: flex;
   flex-direction: column;
-  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
+  border-radius: 10px;
 }
+
 h1 {
   border-bottom: 1px solid #fff;
   text-align: center;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 28px;
 }
+
 #palabra {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  margin: 50px 0;
-  max-height: 150px;
+  margin: 30px 0;
+  max-height: 180px;
+  overflow-y: auto;
+  gap: 4px;
 }
+
 .letra {
   height: 52px;
   width: 55px;
   border: 2px solid #02bfa4;
   text-align: center;
-  margin: 4px;
+  margin: 2px;
   font-weight: 600;
   font-size: 30px;
-  word-break: keep-all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
+
+/* ✅ NUEVO: Estilo para espacios (sin borde, invisible) */
+.espacio {
+  height: 52px;
+  width: 20px;
+  margin: 2px;
+  border: none;
+  background: transparent;
+}
+
 .pintar {
   background-color: #02bfa4;
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(2, 191, 164, 0.5);
 }
+
 .pintarError {
-  background-color: red;
+  background-color: #ff4444;
+  animation: shake 0.5s;
 }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
 h2 {
-  margin: 50px 0 0 0;
+  margin: 20px 0 10px 0;
   font-weight: normal;
-  font-size: 16px;
+  font-size: 18px;
   text-align: center;
-  height: 25px;
+  min-height: 30px;
 }
+
 h3 {
-  margin: 4px 0;
+  margin: 8px 0;
   font-weight: normal;
   font-size: 16px;
   text-align: center;
-  height: 25px;
+  min-height: 25px;
 }
+
 h3 span,
 h2 span {
   font-style: italic;
   margin-left: 10px;
-  font-weight: 500;
+  font-weight: 600;
+  color: #02bfa4;
 }
+
 button {
   display: block;
   width: fit-content;
-  margin: auto;
+  min-width: 150px;
+  margin: 20px auto;
   background-color: transparent;
   border: 2px solid #02bfa4;
   border-radius: 20px;
   color: #fff;
   font-weight: bold;
-  font-size: 15px;
-  padding: 10px;
-  margin-top: 30px;
+  font-size: 16px;
+  padding: 12px 20px;
   cursor: pointer;
-  transition: 0.5s;
+  transition: all 0.3s ease;
 }
+
 button:hover {
   background-color: #02bfa4;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(2, 191, 164, 0.4);
 }
+
+button:active {
+  transform: translateY(0);
+}
+
 input {
   background-color: #1d2837;
   height: 52px;
   width: 55px;
   border: 2px solid #02bfa4;
+  border-radius: 8px;
   text-align: center;
-  margin: 4px;
+  margin: 10px auto;
   font-weight: 600;
   font-size: 30px;
   color: #fff;
+  transition: border-color 0.3s ease;
 }
+
+input:focus {
+  outline: none;
+  border-color: #38ef7d;
+  box-shadow: 0 0 10px rgba(2, 191, 164, 0.5);
+}
+
 input::placeholder {
-  height: 50px;
-  width: 50px;
   opacity: 0.6;
   font-size: 10px;
-  text-align: start;
 }
-/* Estilos para el modal */
+
+footer {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #02bfa4;
+  text-align: center;
+}
+
+/* ========== ESTILOS DEL MODAL MEJORADO ========== */
+
 .modal {
-  display: none; /* Ocultar el modal por defecto */
-  position: fixed; /* Posición fija */
-  z-index: 1; /* Asegurar que esté encima de todo */
+  display: none;
+  position: fixed;
+  z-index: 1000;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto; /* Habilite el desplazamiento si es necesario */
-  background-color: rgba(0, 0, 0, 0.4); /* Fondo oscuro semitransparente */
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease;
 }
 
-/* Contenido del modal */
 .modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #02bfa4;
-  width: 50%;
-  height: 10%;
-  color: #1d2837;
-  font-style: italic;
-  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 30px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   text-align: center;
+  position: relative;
+  max-width: 400px;
+  width: 90%;
+  transform: scale(0.7);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* Botón para cerrar el modal */
+.modal-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: bounceIn 0.6s ease;
+}
+
 .close {
   color: #fff;
-  float: right;
-  font-size: 28px;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 35px;
   font-weight: bold;
-  border: 5px solid #02bfa4;
-  border-radius: 50%;
-  background-color: #1d2837;
-  padding: 10px;
-}
-
-.close:hover,
-.close:focus {
-  color: #02bfa4;
-  text-decoration: none;
   cursor: pointer;
+  transition: all 0.3s ease;
+  line-height: 20px;
 }
 
-@media screen and (max-width: 500px) and (orientation: landscape) {
-  * {
-    box-sizing: border-box;
-    font-family: "Open Sans";
-    margin: 0;
-    padding: 0;
+.close:hover {
+  transform: rotate(90deg);
+  color: #ffeb3b;
+}
+
+#modal-message {
+  color: #fff;
+  font-size: 18px;
+}
+
+#modal-message h2 {
+  margin: 0 0 15px 0;
+  font-size: 32px;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+#modal-message p {
+  margin: 10px 0;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.palabra-correcta {
+  display: block;
+  font-size: 28px;
+  margin-top: 15px;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: pulse 2s infinite;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal de Victoria */
+.modal-content.victoria {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+/* Modal de Derrota */
+.modal-content.derrota {
+  background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+}
+
+/* Modal de Límite */
+.modal-content.limite {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* ========== ANIMACIONES ========== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  body {
-    background: linear-gradient(#12b9de, #43d6d4);
-    height: 100vh;
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* ========== RESPONSIVE MÓVIL ========== */
+
+@media (max-width: 650px) {
+  .juego {
+    border: 5px solid #1d2837;
   }
 
   .jogo {
-    width: 4900px;
-    background-color: #1d2837;
-    border: 3px solid #fff;
-    color: #fff;
-    padding: 5px;
-    margin-top: 0px;
-    justify-content: center;
-    align-items: center;
+    width: 95%;
+    height: auto;
+    min-height: 600px;
+    margin: 20px auto;
+    padding: 15px;
   }
-  h2 {
-    border-bottom: 1px solid #fff;
-    text-align: center;
-    padding-bottom: 5px;
+
+  h1 {
+    font-size: 24px;
   }
+
   #palabra {
-    display: flex;
-    justify-content: center;
-    margin: 40px 0;
+    margin: 20px 0;
+    max-height: 200px;
   }
+
   .letra {
-    height: 52px;
-    width: 55px;
-    border: 2px solid #02bfa4;
-    text-align: center;
-    margin: 4px;
-    font-weight: 600;
-    font-size: 30px;
+    height: 45px;
+    width: 48px;
+    font-size: 26px;
   }
-  .pintar {
-    background-color: #02bfa4;
+
+  .espacio {
+    height: 45px;
+    width: 15px;
   }
-  .pintarError {
-    background-color: red;
+
+  h2, h3 {
+    font-size: 14px;
   }
-  h3 {
-    margin: 4px 0;
-    font-weight: normal;
-    font-size: 16px;
-    text-align: center;
-  }
-  h3 span {
-    font-style: italic;
-  }
+
   button {
-    display: block;
-    width: fit-content;
-    margin: auto;
-    background-color: transparent;
-    border: 2px solid #02bfa4;
-    border-radius: 20px;
-    color: #fff;
-    font-weight: bold;
-    font-size: 15px;
-    padding: 10px;
-    margin-top: 30px;
-    cursor: pointer;
-    transition: 0.5s;
+    min-width: 120px;
+    font-size: 14px;
+    padding: 10px 15px;
   }
-  button:hover {
-    background-color: #02bfa4;
+
+  input {
+    height: 45px;
+    width: 48px;
+    font-size: 26px;
+  }
+
+  .modal-content {
+    padding: 30px 20px;
+  }
+
+  .modal-icon {
+    font-size: 60px;
+  }
+
+  #modal-message h2 {
+    font-size: 26px;
+  }
+
+  #modal-message p {
+    font-size: 16px;
+  }
+
+  .palabra-correcta {
+    font-size: 22px;
+  }
+}
+
+/* ========== RESPONSIVE LANDSCAPE (HORIZONTAL) ========== */
+
+@media screen and (max-width: 850px) and (orientation: landscape) {
+  body {
+    height: 100vh;
+    overflow: auto;
+  }
+
+  .juego {
+    border: none;
+    height: auto;
+  }
+
+  .jogo {
+    width: 90%;
+    max-width: 700px;
+    height: auto;
+    min-height: 500px;
+    margin: 10px auto;
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+
+  #palabra {
+    margin: 15px 0;
+    max-height: 120px;
+  }
+
+  .letra {
+    height: 40px;
+    width: 43px;
+    font-size: 24px;
+    margin: 2px;
+  }
+
+  h2, h3 {
+    font-size: 13px;
+    margin: 5px 0;
+  }
+
+  button {
+    margin: 15px auto;
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+
+  input {
+    height: 40px;
+    width: 43px;
+    font-size: 24px;
+  }
+}
+
+/* ========== PANTALLAS PEQUEÑAS ========== */
+
+@media (max-width: 400px) {
+  .jogo {
+    padding: 10px;
+  }
+
+  .letra {
+    height: 40px;
+    width: 40px;
+    font-size: 22px;
+  }
+
+  input {
+    height: 40px;
+    width: 40px;
+    font-size: 22px;
+  }
+
+  h1 {
+    font-size: 20px;
   }
 }

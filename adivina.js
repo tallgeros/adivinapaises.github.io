@@ -1,38 +1,19 @@
 const botonera = document.getElementById("boton");
-let cantPalabrasJugadas = 0;
-let intentosRestantes = 3
+let cantPartidasJugadas = 0;
+let intentosRestantes = 3;
 let posActual;
 let arrayPalabraActual;
-letrasIngresadas = [];
-let cantPartidasJugadas = -1;
-botonera.addEventListener("click", comienzo);
-function comienzo() {
-  // Generar nuevos valores para continente y país
-  const indiceContinente = Math.floor(Math.random() * ContinentesPaises.length);
-  const continenteSeleccionado = ContinentesPaises[indiceContinente];
-  const indicePais = Math.floor(Math.random() * continenteSeleccionado.paises.length);
-  const paisSeleccionado = continenteSeleccionado.paises[indicePais];
-  this.textContent = "Nueva Palabra"
-  if (cantPartidasJugadas >= 5) {
-    alert("¡Has alcanzado el límite de 5 partidas!");
-    return;
+let letrasIngresadas = [];
 
-  }
-  let intentosRestantes = 3;
-  cantPartidasJugadas++;
-  actualizarJugadas();
-  // Reiniciar otros elementos y variables
-  intentosRestantes = 3;
-  letrasIngresadas = [];
-  document.getElementById("letrasIngresadas").textContent = "";
-  document.getElementById("intentos").textContent = intentosRestantes;
-  document.getElementById("inputLetra").textContent = ""
-  cantPalabrasJugadas++;
-
-  // Cargar nueva palabra
-  cargarNuevaPalabra(paisSeleccionado, continenteSeleccionado.continente);
+// Función para normalizar texto (quita tildes y convierte a mayúsculas)
+function normalizarTexto(texto) {
+  return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
-// Agregar event listener para verificar letra ingresada por teclado
+
+// Event listener del botón (solo se añade una vez)
+botonera.addEventListener("click", comienzo);
+
+// Event listener para teclado (solo se añade una vez)
 document.addEventListener("keydown", function (event) {
   const letraIngresada = event.key.toUpperCase();
   if (isLetter(letraIngresada)) {
@@ -40,63 +21,106 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
-// Agregar event listener para verificar letra ingresada en dispositivo móvil
+// Event listener para móvil (solo se añade una vez)
 document.getElementById("inputLetra").addEventListener("input", function (event) {
   const letraIngresada = event.target.value.toUpperCase();
   if (isLetter(letraIngresada)) {
     verificarLetra(letraIngresada);
-    // Limpiar el campo de entrada después de cada intento
     this.value = "";
   }
 });
 
+function comienzo() {
+  // Verificar límite de partidas
+  if (cantPartidasJugadas >= 5) {
+    mostrarModal("limite");
+    return;
+  }
+
+  // Generar nuevos valores para continente y país
+  const indiceContinente = Math.floor(Math.random() * ContinentesPaises.length);
+  const continenteSeleccionado = ContinentesPaises[indiceContinente];
+  const indicePais = Math.floor(Math.random() * continenteSeleccionado.paises.length);
+  const paisSeleccionado = continenteSeleccionado.paises[indicePais];
+
+  this.textContent = "Nueva Palabra";
+
+  // Incrementar partidas
+  cantPartidasJugadas++;
+  actualizarJugadas();
+
+  // Reiniciar variables del juego
+  intentosRestantes = 3;
+  letrasIngresadas = [];
+  document.getElementById("letrasIngresadas").textContent = "";
+  document.getElementById("intentos").textContent = intentosRestantes;
+  document.getElementById("inputLetra").value = "";
+
+  // Cargar nueva palabra
+  cargarNuevaPalabra(paisSeleccionado, continenteSeleccionado.continente);
+}
+
 function cargarNuevaPalabra(pais, continente) {
-  posActual = pais.toUpperCase();
+  // Normalizar el país para comparaciones
+  posActual = normalizarTexto(pais);
   arrayPalabraActual = posActual.split('');
-  document.getElementById("ayuda").textContent = " " + " " + continente;
+  
+  document.getElementById("ayuda").textContent = continente;
   document.getElementById("palabra").innerHTML = "";
+  
   for (let i = 0; i < arrayPalabraActual.length; i++) {
     const divLetra = document.createElement("div");
-    divLetra.className = "letra";
+    // ✅ CORREGIDO: Espacios quedan vacíos (sin borde)
+    if (arrayPalabraActual[i] === ' ') {
+      divLetra.className = "espacio";
+    } else {
+      divLetra.className = "letra";
+    }
     document.getElementById("palabra").appendChild(divLetra);
   }
 }
+
 function actualizarJugadas() {
   const jugadasElement = document.getElementById("jugadas");
-  jugadasElement.textContent = " " + `Partida  ${cantPartidasJugadas}/5`;
+  jugadasElement.textContent = `${cantPartidasJugadas}/5`;
 }
 
-cantPartidasJugadas++;
-actualizarJugadas();
-
 function verificarLetra(letra) {
+  // Normalizar letra ingresada
+  const letraNormalizada = normalizarTexto(letra);
+  
   if (isLetter(letra)) {
-    if (letrasIngresadas.lastIndexOf(letra.toUpperCase()) === -1) {
-      let acerto = false;
+    // ✅ CORREGIDO: Verificar si la letra YA fue intentada
+    if (letrasIngresadas.includes(letraNormalizada)) {
+      return; // Salir si ya fue ingresada
+    }
 
-      acerto = verificarAcierto(letra.toUpperCase());
+    // ✅ Agregar letra INMEDIATAMENTE al array
+    letrasIngresadas.push(letraNormalizada);
 
-      if (!acerto) {
-        manejarError(letra.toUpperCase());
-      }
+    let acerto = false;
+    acerto = verificarAcierto(letraNormalizada);
 
-      actualizarLetrasIngresadas(letra.toUpperCase(), acerto);
+    if (!acerto) {
+      manejarError(letraNormalizada);
+    }
 
-      if (verificarVictoria()) {
-        manejarVictoria();
-      }
+    actualizarLetrasIngresadas(letraNormalizada, acerto);
+
+    // ✅ Verificar victoria solo si quedan intentos
+    if (intentosRestantes > 0 && verificarVictoria()) {
+      manejarVictoria();
     }
   }
 }
-
-
 
 function verificarAcierto(letra) {
   let acerto = false;
   for (let i = 0; i < arrayPalabraActual.length; i++) {
     if (arrayPalabraActual[i] === letra) {
-      document.getElementsByClassName("letra")[i].textContent = letra;
-      document.getElementsByClassName("letra")[i].classList.add("pintar");
+      const elementos = document.querySelectorAll("#palabra > div");
+      elementos[i].textContent = letra;
+      elementos[i].classList.add("pintar");
       acerto = true;
     }
   }
@@ -104,60 +128,117 @@ function verificarAcierto(letra) {
 }
 
 function manejarError(letra) {
- if(intentosRestantes > 0){
-    // Restar un intento
+  // Primero verificar si quedan intentos, LUEGO restar
+  if (intentosRestantes > 0) {
     intentosRestantes--;
-    // Actualizar el contador de intentos en la interfaz
     document.getElementById("intentos").textContent = intentosRestantes;
- }
+  }
+
+  // Verificar derrota después de restar
   if (intentosRestantes === 0) {
-    const modal = document.getElementById("modal");
-    const modalMessage = document.getElementById("modal-message");
-    modalMessage.textContent = "¡Perdiste! La palabra era: " + arrayPalabraActual.join("");
-    modal.style.display = "block";
-    intentosRestantes = 3;
-    // Cuando se haga clic en la X, ocultar el modal
-    const closeModal = document.getElementsByClassName("close")[0];
-    closeModal.onclick = function () {
-      modal.style.display = "none";
-    }
+    mostrarModal("derrota", posActual);
   }
 }
-
-let letrasIngresadasElement = document.getElementById("letrasIngresadas");
 
 function actualizarLetrasIngresadas(letra, acerto) {
   const letrasIngresadasElement = document.getElementById("letrasIngresadas");
   const nuevaLetra = document.createElement("span");
-  nuevaLetra.textContent = letra + " - ";
+  nuevaLetra.textContent = letra + " ";
+  
   if (acerto) {
-    nuevaLetra.style.color = "green"; // Color verde para aciertos
+    nuevaLetra.style.color = "#02bfa4";
+    nuevaLetra.style.fontWeight = "bold";
   } else {
-    nuevaLetra.style.color = "red"; // Color rojo para errores
+    nuevaLetra.style.color = "#ff4444";
+    nuevaLetra.style.fontWeight = "bold";
   }
+  
   letrasIngresadasElement.appendChild(nuevaLetra);
 }
 
-
 function verificarVictoria() {
-  const palabraAdivinada = document.getElementById("palabra").innerText.replace(/\s/g, "").toUpperCase();
-  const palabraActualSinEspacios = arrayPalabraActual.join("").replace(/\s/g, "");
-  return palabraAdivinada === palabraActualSinEspacios;
+  let todasAdivinadas = true;
+  const elementos = document.querySelectorAll("#palabra > div");
+  
+  for (let i = 0; i < arrayPalabraActual.length; i++) {
+    // ✅ Ignorar espacios en la verificación
+    if (arrayPalabraActual[i] !== ' ') {
+      if (!elementos[i].classList.contains("pintar")) {
+        todasAdivinadas = false;
+        break;
+      }
+    }
+  }
+  
+  console.log("¿Victoria?", todasAdivinadas); // Debug
+  return todasAdivinadas;
 }
 
-
 function manejarVictoria() {
-  const modal = document.getElementById("modal");
-  const modalMessage = document.getElementById("modal-message");
-  modalMessage.textContent = "¡Ganaste!" + "" + "Felicidades";
-  modal.style.display = "block";
+  mostrarModal("victoria");
+}
 
-  // Cuando se haga clic en la X, ocultar el modal
-  const closeModal = document.getElementsByClassName("close")[0];
-  closeModal.onclick = function () {
-    modal.style.display = "none";
+// ✅ NUEVA FUNCIÓN: Modal mejorado y reutilizable
+function mostrarModal(tipo, palabra = "") {
+  const modal = document.getElementById("modal");
+  const modalContent = document.querySelector(".modal-content");
+  const modalMessage = document.getElementById("modal-message");
+  const modalIcon = document.getElementById("modal-icon");
+  
+  // Limpiar clases anteriores
+  modalContent.classList.remove("victoria", "derrota", "limite");
+  
+  // Configurar contenido según el tipo
+  if (tipo === "victoria") {
+    modalContent.classList.add("victoria");
+    modalIcon.innerHTML = "🎉";
+    modalMessage.innerHTML = `
+      <h2>¡Felicidades!</h2>
+      <p>¡Has adivinado el país correctamente!</p>
+    `;
+  } else if (tipo === "derrota") {
+    modalContent.classList.add("derrota");
+    modalIcon.innerHTML = "😔";
+    modalMessage.innerHTML = `
+      <h2>¡Perdiste!</h2>
+      <p>La palabra era:</p>
+      <strong class="palabra-correcta">${palabra}</strong>
+    `;
+  } else if (tipo === "limite") {
+    modalContent.classList.add("limite");
+    modalIcon.innerHTML = "🏁";
+    modalMessage.innerHTML = `
+      <h2>¡Límite alcanzado!</h2>
+      <p>Has completado las 5 partidas.</p>
+      <p>Recarga la página para jugar de nuevo.</p>
+    `;
   }
-  intentosRestantes = "";
+  
+  // Mostrar modal con animación
+  modal.style.display = "flex";
+  setTimeout(() => {
+    modalContent.style.transform = "scale(1)";
+    modalContent.style.opacity = "1";
+  }, 10);
+  
+  // Cerrar modal
+  const closeModal = document.querySelector(".close");
+  const cerrarConClick = () => {
+    modalContent.style.transform = "scale(0.7)";
+    modalContent.style.opacity = "0";
+    setTimeout(() => {
+      modal.style.display = "none";
+    }, 300);
+  };
+  
+  closeModal.onclick = cerrarConClick;
+  
+  // Cerrar al hacer clic fuera del modal
+  modal.onclick = function(event) {
+    if (event.target === modal) {
+      cerrarConClick();
+    }
+  };
 }
 
 function isLetter(str) {
